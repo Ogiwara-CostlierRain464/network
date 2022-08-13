@@ -4,3 +4,4 @@ project(network C)
 set(CMAKE_C_STANDARD 11)
 
 add_executable(network main.c)
+add_executable(epoll_sample epoll.c)
