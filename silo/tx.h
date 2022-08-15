@@ -5,23 +5,30 @@
 
 struct read_operation{
   key key;
-  struct tuple* ptr;
   value value;
   struct tid_word tid_word;
 };
 
-struct write_pperation{
+struct write_operation{
   key key;
-  struct Tuple* ptr;
+  value value;
+  struct tuple *ptr;
 };
 
-struct Tx{
-  struct read_operation reads[100];
-  ssize_t num_read
+struct tx{
+  struct read_operation reads[10];
+  ssize_t num_read;
+  struct write_operation writes[10];
+  ssize_t num_write;
+
+  struct tid_word
+    max_read_tid,
+    max_write_tid,
+    most_recently_chosen_tid;
 };
 
-value tx_read(key);
-void tx_write(key, value);
-void tx_commit();
+value tx_read(struct tx*, key);
+void tx_write(struct tx*, key, value);
+void tx_commit(struct tx*);
 
 #endif

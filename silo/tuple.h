@@ -5,13 +5,14 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdalign.h>
+#include <stdatomic.h>
 
 typedef int key;
 typedef int value;
 
 struct tid_word{
   union {
-    uint64_t body;
+    _Atomic uint64_t body;
     struct {
       bool lock: 1;
       bool latest: 1;
@@ -22,10 +23,24 @@ struct tid_word{
   };
 };
 
+bool tid_eq(struct tid_word t1, struct tid_word t2){
+  return t1.body == t2.body;
+}
+
+bool tid_neq(struct tid_word t1, struct tid_word t2){
+  return !tid_eq(t1, t2);
+}
+
 struct tuple{
   alignas(64) struct tid_word tid_word;
   value value;
 };
+
+typedef uint32_t epoch_t;
+_Atomic extern epoch_t epoch;
+alignas(64) extern uint64_t global_epoch;
+alignas(64) extern uint64_t *thread_local_epochs;
+alignas(64) extern struct tuple *table;
 
 
 
