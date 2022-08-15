@@ -1,10 +1,10 @@
 #include "tx.h"
 
-Value tx_read(Key key){
+value tx_read(key key){
 
 }
 
-void tx_write(Key key, Value val){
+void tx_write(key key, value val){
 
 }
 

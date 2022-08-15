@@ -20,8 +20,8 @@ struct Tx{
   ssize_t num_read
 };
 
-Value tx_read(Key);
-void tx_write(Key, Value);
+value tx_read(key);
+void tx_write(key, value);
 void tx_commit();
 
 #endif
