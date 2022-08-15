@@ -23,11 +23,11 @@ struct tid_word{
   };
 };
 
-bool tid_eq(struct tid_word t1, struct tid_word t2){
+static bool tid_eq(struct tid_word t1, struct tid_word t2){
   return t1.body == t2.body;
 }
 
-bool tid_neq(struct tid_word t1, struct tid_word t2){
+static bool tid_neq(struct tid_word t1, struct tid_word t2){
   return !tid_eq(t1, t2);
 }
 
