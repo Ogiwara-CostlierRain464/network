@@ -19,14 +19,9 @@ struct client_info{
 };
 
 int main(){
-  int sock0;
-  ssize_t n;
-  struct sockaddr_in addr;
-  struct sockaddr_in client;
-  socklen_t len;
   struct epoll_event ev_ret[EVENTS];
-  int ep_fd;
-  sock0 = socket(AF_INET, SOCK_STREAM, 0);
+  int sock0 = socket(AF_INET, SOCK_STREAM, 0);
+  struct sockaddr_in addr;
   addr.sin_family = AF_INET;
   addr.sin_port = htons(8080);
   addr.sin_addr.s_addr = INADDR_ANY;
@@ -34,7 +29,7 @@ int main(){
     errExit("bind");
 
   listen(sock0, 5);
-  ep_fd = epoll_create(EVENTS);
+  int ep_fd = epoll_create(EVENTS);
   if(ep_fd < 0)
     errExit("epoll_create");
 
@@ -63,7 +58,8 @@ int main(){
       printf("fd=%d\n", ci->fd);
 
       if(ci->fd == sock0){
-        len = sizeof(client);
+        struct sockaddr_in client;
+        socklen_t len = sizeof(client);
         int sock = accept(sock0, (struct sockaddr*)&client, &len);
         if(sock < 0)
           errExit("accept");
@@ -93,7 +89,7 @@ int main(){
           if(epoll_ctl(ep_fd, EPOLL_CTL_MOD, ci->fd, &ev_ret[i]) != 0)
             errExit("epoll_ctl");
         }else if(ev_ret[i].events & EPOLLOUT){
-          n = write(ci->fd , ci->buf, ci->n);
+          ssize_t n = write(ci->fd , ci->buf, ci->n);
           if(n < 0)
             errExit("write");
 
