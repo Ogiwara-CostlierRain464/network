@@ -83,6 +83,8 @@ int main(){
           if(ci->n < 0)
             errExit("read");
 
+          // format: r 1   w 2 3
+
           ci->state = WRITE;
           ev_ret[i].events = EPOLLOUT;
 
