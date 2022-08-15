@@ -3,6 +3,7 @@
 #include <netinet/in.h>
 #include <sys/epoll.h>
 #include "lib/tlpi_hdr.h"
+#include "lib/read_line.h"
 
 #define EVENTS 16
 #define BUF_SIZE 1024
@@ -20,6 +21,7 @@ struct client_info{
 
 int main(){
   struct epoll_event ev_ret[EVENTS];
+  int dic[1000];
   int sock0 = socket(AF_INET, SOCK_STREAM, 0);
   struct sockaddr_in addr;
   addr.sin_family = AF_INET;
@@ -79,9 +81,37 @@ int main(){
           errExit("epoll_ctl");
       }else{
         if(ev_ret[i].events & EPOLLIN){
-          ci->n = read(ci->fd , ci->buf, BUF_SIZE);
+          ci->n = readLine(ci->fd , ci->buf, BUF_SIZE);
           if(ci->n < 0)
             errExit("read");
+
+          char *tmp;
+          char *tmp2;
+          char *end;
+          int key;
+          int val;
+          switch (ci->buf[0]) {
+            case 'r':
+              tmp = strtok(ci->buf, " ");
+              tmp = strtok(NULL, " ");
+              key = strtol(tmp, &end, 10);
+              sprintf(ci->buf, "READ Key: %ld Value: %d\n", key, dic[key]);
+              ci->n = strlen(ci->buf);
+              break;
+            case 'w':
+              tmp = strtok(ci->buf, " ");
+              tmp = strtok(NULL, " ");
+              tmp2 = strtok(NULL, " ");
+              key = strtol(tmp, &end, 10);
+              val = strtol(tmp2, &end, 10);
+              dic[key] = val;
+              sprintf(ci->buf, "WRITE Key: %ld Value: %d\n", key, dic[key]);
+              ci->n = strlen(ci->buf);
+              break;
+            default:
+              strcpy(ci->buf, "Invalid command\n");
+              ci->n = strlen(ci->buf);
+          }
 
           // format: r 1   w 2 3
 
