@@ -2,6 +2,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/epoll.h>
+#include <sys/ioctl.h>
 #include "lib/tlpi_hdr.h"
 #include "lib/read_line.h"
 
@@ -23,6 +24,14 @@ int main(){
   struct epoll_event ev_ret[EVENTS];
   int dic[1000];
   int sock0 = socket(AF_INET, SOCK_STREAM, 0);
+  if(sock0 == -1)
+    errExit("socket");
+
+  if(setsockopt(sock0, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) == -1)
+    errExit("socket");
+  if(setsockopt(sock0, SOL_SOCKET, SO_REUSEPORT, &(int){1}, sizeof(int)) == -1)
+    errExit("socket");
+
   struct sockaddr_in addr;
   addr.sin_family = AF_INET;
   addr.sin_port = htons(8080);
@@ -30,7 +39,9 @@ int main(){
   if(bind(sock0, (struct sockaddr*) &addr, sizeof(addr)) == -1)
     errExit("bind");
 
-  listen(sock0, 5);
+  if(listen(sock0, 5)== -1)
+    errExit("listen");
+
   int ep_fd = epoll_create(EVENTS);
   if(ep_fd < 0)
     errExit("epoll_create");
@@ -44,6 +55,9 @@ int main(){
 
   memset(ev0.data.ptr, 0, sizeof(struct client_info));
   ((struct client_info*)ev0.data.ptr)->fd = sock0;
+
+  if(ioctl(sock0, FIONBIO, &(int){1}) == -1)
+    errExit("ioctl");
 
   if(epoll_ctl(ep_fd, EPOLL_CTL_ADD, sock0, &ev0) != 0)
     errExit("epoll_ctl");
@@ -66,6 +80,12 @@ int main(){
         if(sock < 0)
           errExit("accept");
 
+        // SUSv3 does not define about the option inheritance of accept().
+        if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) == -1)
+          errExit("socket");
+        if(setsockopt(sock, SOL_SOCKET, SO_REUSEPORT, &(int){1}, sizeof(int)) == -1)
+          errExit("socket");
+
         printf("accept sock=%d\n", sock);
         struct epoll_event ev;
         memset(&ev, 0, sizeof(ev));
@@ -76,6 +96,9 @@ int main(){
 
         memset(ev.data.ptr, 0, sizeof(struct client_info));
         ((struct client_info*)ev.data.ptr)->fd = sock;
+
+        if(ioctl(sock, FIONBIO, &(int){1}) == -1)
+          errExit("ioctl");
 
         if(epoll_ctl(ep_fd, EPOLL_CTL_ADD, sock, &ev) != 0)
           errExit("epoll_ctl");
