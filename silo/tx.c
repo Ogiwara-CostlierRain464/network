@@ -38,6 +38,8 @@ value tx_read(struct tx* tx,key key){
 }
 
 void tx_write(struct tx* tx, key key, value val){
+  // assert not to re-write.
+
   struct tuple *t = &table[key];
   tx->writes[tx->num_write] = (struct write_operation){
     .key = key,
@@ -69,7 +71,8 @@ enum result tx_commit(struct tx* tx){
 
     if(now.tid != when_read.tid
     || !now.latest
-    || (now.lock && !tx_exist_in_write_set(tx, t))){
+    || (now.lock && !tx_exist_in_write_set(tx, t))
+    || now.epoch != when_read.epoch){
       tx_unlock_write_set(tx);
       return aborted;
     }
@@ -79,10 +82,10 @@ enum result tx_commit(struct tx* tx){
 
   struct tid_word a, b, c;
   a.body = max(tx->max_read_tid.body, tx->max_write_tid.body);
-  a.body++;
+  a.tid++;
 
   b.body = tx->most_recently_chosen_tid.body;
-  b.body++;
+  b.tid++;
 
   c.epoch = e;
 
