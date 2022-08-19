@@ -27,6 +27,7 @@ struct tx{
     most_recently_chosen_tid;
 };
 
+void tx_init(struct tx*);
 value tx_read(struct tx*, key);
 void tx_write(struct tx*, key, value);
 void tx_commit(struct tx*);

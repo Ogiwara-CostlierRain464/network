@@ -3,6 +3,10 @@
 #include <stdatomic.h>
 #include <memory.h>
 
+void tx_init(struct tx* t){
+  memset(t, 0, sizeof(struct tx));
+}
+
 value tx_read(struct tx* tx,key key){
   struct tid_word before, after;
   value data;

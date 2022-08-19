@@ -31,16 +31,18 @@ static bool tid_neq(struct tid_word t1, struct tid_word t2){
   return !tid_eq(t1, t2);
 }
 
+#define CACHE_LINE_SIZE 64
+
 struct tuple{
-  alignas(64) struct tid_word tid_word;
+  alignas(CACHE_LINE_SIZE) struct tid_word tid_word;
   value value;
 };
 
 typedef uint32_t epoch_t;
 _Atomic extern epoch_t epoch;
-alignas(64) extern uint64_t global_epoch;
-alignas(64) extern uint64_t *thread_local_epochs;
-alignas(64) extern struct tuple *table;
+alignas(CACHE_LINE_SIZE) extern uint64_t global_epoch;
+alignas(CACHE_LINE_SIZE) extern uint64_t *thread_local_epochs;
+alignas(CACHE_LINE_SIZE) extern struct tuple *table;
 
 
 

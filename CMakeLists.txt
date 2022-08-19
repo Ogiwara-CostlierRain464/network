@@ -13,3 +13,21 @@ add_executable(epoll_sample
   ${SILO}
   epoll.c
 )
+
+add_executable(silo_sample
+  ${LIB}
+  ${SILO}
+  silo_sample.c
+)
+
+enable_testing()
+
+add_executable(unit_test
+  ${LIB}
+  ${SILO}
+  test/unit.c
+)
+add_test(
+  NAME unit_test
+  COMMAND $<TARGET_FILE:unit_test> --only==a
+)
