@@ -11,7 +11,9 @@ int main(){
   value v = tx_read(&t, 1);
   v++;
   tx_write(&t, 1, v);
-  tx_commit(&t);
+  enum result r = tx_commit(&t);
+  assert(r == commited);
+  assert(table[1].value == v);
 
   return 0;
 }

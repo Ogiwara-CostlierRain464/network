@@ -22,7 +22,7 @@ value tx_read(struct tx* tx,key key){
 
     after.body = atomic_load(&t->tid_word.body);
 
-    if(tid_eq(before, after)){
+    if(tid_word_eq(before, after)){
       break;
     }else{
       continue;
@@ -51,7 +51,7 @@ void tx_lock_write_set(struct tx* tx);
 bool tx_exist_in_write_set(struct tx* tx, struct tuple* t);
 void tx_unlock_write_set(struct tx* tx);
 
-void tx_commit(struct tx* tx){
+enum result tx_commit(struct tx* tx){
   // TODO sort write order
   tx_lock_write_set(tx);
 
@@ -67,11 +67,11 @@ void tx_commit(struct tx* tx){
     struct tid_word now;
     now.body = atomic_load(&t->tid_word.body);
 
-    if(tid_neq(now, when_read)
+    if(now.tid != when_read.tid
     || !now.latest
     || (now.lock && !tx_exist_in_write_set(tx, t))){
       tx_unlock_write_set(tx);
-      return;
+      return aborted;
     }
 
     tx->max_read_tid.body = max(tx->max_read_tid.body, now.body);
@@ -96,6 +96,8 @@ void tx_commit(struct tx* tx){
     atomic_store(&tx->writes[i].ptr->value, tx->writes[i].value);
     atomic_store(&tx->writes[i].ptr->tid_word.body, max.body);
   }
+
+  return commited;
 }
 
 void tx_lock_write_set(struct tx* tx){

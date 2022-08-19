@@ -3,6 +3,9 @@ project(network C)
 
 set(CMAKE_C_STANDARD 11)
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 add_executable(network main.c)
 
 file(GLOB_RECURSE LIB lib/*)
@@ -14,11 +17,13 @@ add_executable(epoll_sample
   epoll.c
 )
 
+
 add_executable(silo_sample
   ${LIB}
   ${SILO}
   silo_sample.c
 )
+target_link_libraries(silo_sample PUBLIC "-pthread")
 
 enable_testing()
 
