@@ -14,9 +14,8 @@ file(GLOB_RECURSE SILO silo/*)
 add_executable(epoll_sample
   ${LIB}
   ${SILO}
-  epoll.c
+  epoll_sample.c
 )
-
 
 add_executable(silo_sample
   ${LIB}
@@ -24,6 +23,14 @@ add_executable(silo_sample
   silo_sample.c
 )
 target_link_libraries(silo_sample PUBLIC "-pthread")
+
+
+add_executable(silo_epoll
+  ${LIB}
+  ${SILO}
+  silo_epoll.c
+  )
+target_link_libraries(silo_epoll PUBLIC "-pthread")
 
 enable_testing()
 

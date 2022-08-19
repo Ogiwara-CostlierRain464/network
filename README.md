@@ -7,7 +7,7 @@ mkdir cmake-build-debug
 cd cmake-build-debug
 cmake ..
 make
-./epoll_sample 
+./silo_epoll
 ```
 
 In another terminal:
