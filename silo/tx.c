@@ -53,8 +53,17 @@ void tx_lock_write_set(struct tx* tx);
 bool tx_exist_in_write_set(struct tx* tx, struct tuple* t);
 void tx_unlock_write_set(struct tx* tx);
 
+int compare_write(const void* a_, const void* b_){
+  struct write_operation* a = (struct write_operation*) a_ ;
+  struct write_operation* b = (struct write_operation*) b_ ;
+
+  if(a->key == b->key) return 0;
+  else if(a->key < b->key) return -1;
+  else return 1;
+}
+
 enum result tx_commit(struct tx* tx){
-  // TODO sort write order
+  qsort(tx->writes, tx->num_write, sizeof(struct write_operation), compare_write);
   tx_lock_write_set(tx);
 
   atomic_thread_fence(memory_order_acquire);
@@ -104,6 +113,7 @@ enum result tx_commit(struct tx* tx){
 }
 
 void tx_lock_write_set(struct tx* tx){
+  // assume write set has sorted.
   struct tid_word expected, desired;
   for(size_t i = 0; i < tx->num_write; i++){
     key k = tx->writes[i].key;
