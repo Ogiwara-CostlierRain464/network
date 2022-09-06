@@ -7,24 +7,20 @@ mkdir cmake-build-debug
 cd cmake-build-debug
 cmake ..
 make
+```
+
+Server
+```shell
 ./silo_epoll
+```
+
+Client
+```shell
+./client
+Throughput: 20284.202636 seconds: 10.000048
 ```
 
 In another terminal:
 ```shell
-$ telnet localhost 8080
-Trying 127.0.0.1...
-Connected to localhost.
-Escape character is '^]'.
-w 2 3
-WRITE Key: 2 Value: 3
-Connection closed by foreign host.
 
-$ telnet localhost 8080
-Trying 127.0.0.1...
-Connected to localhost.
-Escape character is '^]'.
-r 2 
-READ Key: 2 Value: 3
-Connection closed by foreign host.
 ```
