@@ -69,7 +69,7 @@ int main(){
     if(n_fds < 0)
       errExit("epoll_wait");
 
-    printf("after epoll_wait : n_fds=%d\n", n_fds);
+    //printf("after epoll_wait : n_fds=%d\n", n_fds);
 
     for(ssize_t i=0; i<n_fds; i++){
       struct client_info *ci = ev_ret[i].data.ptr;
@@ -109,6 +109,12 @@ int main(){
           ci->n = readLine(ci->fd , ci->buf, BUF_SIZE);
           if(ci->n < 0)
             errExit("read");
+
+          if(ci->n == 0) { // client closed the connection
+            close(ci->fd);
+            free(ev_ret[i].data.ptr);
+            continue;
+          }
 
           char *tmp;
           char *tmp2;

@@ -5,9 +5,11 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "./lib/error_functions.h"
 #include "lib/read_line.h"
+#include "silo/tuple.h"
 
 int main(){
   char recv_buff[1024];
@@ -26,22 +28,36 @@ int main(){
   if(connect(socket_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0)
     errExit("connect");
 
+  clock_t start = clock();
+  double seconds = 0;
+  ssize_t i = 0;
 
-  for(size_t i = 0; i < 10000; i++){
-    int r = rand() % 1;
-    char *str;
-    if(r == 0){
-      str = "r 2\n";
+  for(;;i++){
+    int r_w = rand() % 2;
+    int key = rand() % TUPLE_NUM;
+    int value = rand() & 100;
+
+    char str[100];
+    if(r_w == 0){
+      sprintf(str, "r %d\n", key);
     }else{
-      str = "w 2 3\n";
+      sprintf(str, "w %d %d\n", key, value);
     }
     int p = write(socket_fd, str, strlen(str));
     if(p == -1)
       errExit("write");
 
     readLine(socket_fd, recv_buff, sizeof(recv_buff));
-    printf("Result: %s\n", recv_buff);
+
+    clock_t end = clock();
+    seconds = (double)(end - start) / CLOCKS_PER_SEC;
+    if(seconds > 10){
+      break;
+    }
   }
+
+  double throughput = ((double) i) / seconds;
+  printf("Throughput: %lf seconds: %lf\n", throughput, seconds);
 
   close(socket_fd);
   return 0;

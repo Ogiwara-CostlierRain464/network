@@ -34,6 +34,7 @@ target_link_libraries(silo_epoll PUBLIC "-pthread")
 
 add_executable(client
   ${LIB}
+  ${SILO}
   client.c
 )
 target_link_libraries(client PUBLIC "-pthread")
