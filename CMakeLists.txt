@@ -32,6 +32,13 @@ add_executable(silo_epoll
   )
 target_link_libraries(silo_epoll PUBLIC "-pthread")
 
+add_executable(client
+  ${LIB}
+  client.c
+)
+target_link_libraries(client PUBLIC "-pthread")
+
+
 enable_testing()
 
 add_executable(unit_test

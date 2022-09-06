@@ -73,9 +73,8 @@ int main(){
 
     for(ssize_t i=0; i<n_fds; i++){
       struct client_info *ci = ev_ret[i].data.ptr;
-      printf("fd=%d\n", ci->fd);
 
-      if(ci->fd == sock0){
+      if(ci->fd == sock0){ // First connection
         struct sockaddr_in client;
         socklen_t len = sizeof(client);
         int sock = accept(sock0, (struct sockaddr*)&client, &len);
@@ -104,6 +103,7 @@ int main(){
 
         if(epoll_ctl(ep_fd, EPOLL_CTL_ADD, sock, &ev) != 0)
           errExit("epoll_ctl");
+
       }else{
         if(ev_ret[i].events & EPOLLIN){
           ci->n = readLine(ci->fd , ci->buf, BUF_SIZE);
@@ -156,8 +156,6 @@ int main(){
               ci->n = strlen(ci->buf);
           }
 
-          // format: r 1   w 2 3
-
           ci->state = WRITE;
           ev_ret[i].events = EPOLLOUT;
 
@@ -168,11 +166,10 @@ int main(){
           if(n < 0)
             errExit("write");
 
-          if(epoll_ctl(ep_fd, EPOLL_CTL_DEL, ci->fd, &ev_ret[i]) != 0)
+          ci->state = READ;
+          ev_ret[i].events = EPOLLIN | EPOLLONESHOT;
+          if(epoll_ctl(ep_fd, EPOLL_CTL_MOD, ci->fd, &ev_ret[i]) != 0)
             errExit("epoll_ctl");
-
-          close(ci->fd);
-          free(ev_ret[i].data.ptr);
         }
       }
     }
