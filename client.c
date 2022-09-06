@@ -11,7 +11,27 @@
 #include "lib/read_line.h"
 #include "silo/tuple.h"
 
-int main(){
+int loop_sec = 10;
+bool read_only = true;
+
+int main(int argc, char* argv[]){
+  int c;
+  while ((c = getopt(argc, argv, "t:w")) != -1){
+    switch (c) {
+      case 't':
+        loop_sec = atoi(optarg);
+        break;
+      case 'w':
+        read_only = false;
+        break;
+      default:
+        fprintf(stderr, "Usage: %s [-t secs] [-w] \n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+  }
+
+  printf("Loop sec: %d, Read/Write: %s\n", loop_sec, read_only ? "read only" : "read & write");
+
   char recv_buff[1024];
   memset(recv_buff, 0, sizeof(recv_buff));
   int socket_fd;
@@ -30,10 +50,11 @@ int main(){
 
   clock_t start = clock();
   double seconds = 0;
-  ssize_t i = 0;
+  ssize_t iter_count = 0;
+  long latency_acc=0;
 
-  for(;;i++){
-    int r_w = rand() % 2;
+  for(;;){
+    int r_w = read_only ? 0 : rand() % 2;
     int key = rand() % TUPLE_NUM;
     int value = rand() & 100;
 
@@ -43,21 +64,26 @@ int main(){
     }else{
       sprintf(str, "w %d %d\n", key, value);
     }
+    clock_t before = clock();
     int p = write(socket_fd, str, strlen(str));
     if(p == -1)
       errExit("write");
-
     readLine(socket_fd, recv_buff, sizeof(recv_buff));
 
-    clock_t end = clock();
-    seconds = (double)(end - start) / CLOCKS_PER_SEC;
-    if(seconds > 10){
+    clock_t after = clock();
+    latency_acc += after - before;
+
+    iter_count++;
+
+    seconds = (double)(after - start) / CLOCKS_PER_SEC;
+    if(seconds > loop_sec){
       break;
     }
   }
 
-  double throughput = ((double) i) / seconds;
-  printf("Throughput: %lf seconds: %lf\n", throughput, seconds);
+  double throughput = ((double) iter_count) / seconds;
+  double latency_ave = ((double)latency_acc / CLOCKS_PER_SEC) / iter_count;
+  printf("Throughput: %lf Latency: %lf micro sec\n", throughput, latency_ave * 1000 * 1000);
 
   close(socket_fd);
   return 0;

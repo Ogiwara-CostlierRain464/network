@@ -22,7 +22,7 @@ struct client_info{
   int fd;
 };
 
-int main(){
+int main(int argc, char *argv[]){
   silo_init();
   struct epoll_event ev_ret[EVENTS];
   int sock0 = socket(AF_INET, SOCK_STREAM, 0);
