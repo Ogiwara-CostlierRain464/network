@@ -16,6 +16,7 @@ Server
 
 Client
 ```shell
-./client
-Throughput: 20284.202636 seconds: 10.000048
+./client -t 20
+Loop sec: 20, Read/Write: read only
+Throughput: 22842.772589 Latency: 42.286819 micro sec
 ```
