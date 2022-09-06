@@ -19,8 +19,3 @@ Client
 ./client
 Throughput: 20284.202636 seconds: 10.000048
 ```
-
-In another terminal:
-```shell
-
-```
