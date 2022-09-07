@@ -23,13 +23,17 @@ struct client_info{
 };
 
 uint16_t port = 8080;
+bool non_silo = false;
 
 int main(int argc, char *argv[]){
   int c;
-  while ((c = getopt(argc, argv, "p:")) != -1){
+  while ((c = getopt(argc, argv, "p:n")) != -1){
     switch (c) {
       case 'p':
         port = atoi(optarg);
+        break;
+      case 'n':
+        non_silo = true;
         break;
       default:
         fprintf(stderr, "Usage: %s [-p port]\n", argv[0]);
@@ -144,12 +148,16 @@ int main(int argc, char *argv[]){
               tmp = strtok(NULL, " ");
               key = strtol(tmp, &end, 10);
 
-              for(;;){
-                tx_init(&t);
-                val = tx_read(&t, key);
-                enum result r = tx_commit(&t);
-                if(r == commited)
-                  break;
+              if(non_silo){
+                val = 0;
+              }else{
+                for(;;){
+                  tx_init(&t);
+                  val = tx_read(&t, key);
+                  enum result r = tx_commit(&t);
+                  if(r == commited)
+                    break;
+                }
               }
 
               sprintf(ci->buf, "READ Key: %ld Value: %d\n", key, val);
@@ -162,12 +170,16 @@ int main(int argc, char *argv[]){
               key = strtol(tmp, &end, 10);
               val = strtol(tmp2, &end, 10);
 
-              for(;;){
-                tx_init(&t);
-                tx_write(&t, key, val);
-                enum result r = tx_commit(&t);
-                if(r == commited)
-                  break;
+              if(non_silo){
+                ;
+              }else{
+                for(;;){
+                  tx_init(&t);
+                  tx_write(&t, key, val);
+                  enum result r = tx_commit(&t);
+                  if(r == commited)
+                    break;
+                }
               }
 
               sprintf(ci->buf, "WRITE Key: %d Value: %d\n", key, val);
