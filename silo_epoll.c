@@ -22,7 +22,23 @@ struct client_info{
   int fd;
 };
 
+uint16_t port = 8080;
+
 int main(int argc, char *argv[]){
+  int c;
+  while ((c = getopt(argc, argv, "p:")) != -1){
+    switch (c) {
+      case 'p':
+        port = atoi(optarg);
+        break;
+      default:
+        fprintf(stderr, "Usage: %s [-p port]\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+  }
+
+  printf("Port %d\n", port);
+
   silo_init();
   struct epoll_event ev_ret[EVENTS];
   int sock0 = socket(AF_INET, SOCK_STREAM, 0);

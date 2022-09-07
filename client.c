@@ -13,10 +13,12 @@
 
 int loop_sec = 10;
 bool read_only = true;
+char *address = "127.0.0.1";
+uint16_t port = 8080;
 
 int main(int argc, char* argv[]){
   int c;
-  while ((c = getopt(argc, argv, "t:w")) != -1){
+  while ((c = getopt(argc, argv, "t:wa:p:")) != -1){
     switch (c) {
       case 't':
         loop_sec = atoi(optarg);
@@ -24,13 +26,21 @@ int main(int argc, char* argv[]){
       case 'w':
         read_only = false;
         break;
+      case 'a':
+        address = optarg;
+        break;
+      case 'p':
+        port = atoi(optarg);
+        break;
       default:
-        fprintf(stderr, "Usage: %s [-t secs] [-w] \n", argv[0]);
+        fprintf(stderr, "Usage: %s [-t secs] [-w] [-a address] [-p port] \n", argv[0]);
         exit(EXIT_FAILURE);
     }
   }
 
-  printf("Loop sec: %d, Read/Write: %s\n", loop_sec, read_only ? "read only" : "read & write");
+  printf("Loop sec: %d, Read/Write: %s IP: %s, Port: %d\n",
+         loop_sec, read_only ? "read only" : "read & write",
+         address, port);
 
   char recv_buff[1024];
   memset(recv_buff, 0, sizeof(recv_buff));
@@ -42,8 +52,8 @@ int main(int argc, char* argv[]){
   memset(&server_addr, 0, sizeof(server_addr));
 
   server_addr.sin_family = AF_INET;
-  server_addr.sin_port = htons(8080);
-  server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+  server_addr.sin_port = htons(port);
+  server_addr.sin_addr.s_addr = inet_addr(address);
 
   if(connect(socket_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0)
     errExit("connect");
